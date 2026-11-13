@@ -35,7 +35,7 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         // 1. Perfis de Utilização (Seção 4)
-        Usuario admin = garantirUsuario("Coordenação M.O.V. (Admin)", "admin@mov.com", "admin123", TipoUsuario.ADMIN, "M.O.V. / Senac SP");
+        Usuario admin = garantirUsuario("Coordenação M.O.V. (Admin)", "admin@mov.com", "Senac@2026", TipoUsuario.ADMIN, "M.O.V. / Senac SP");
         Usuario prof = garantirUsuario("Equipe Organização M.O.V.", "organizacao@mov.com", "Senac@2026", TipoUsuario.PROFESSOR, "M.O.V. / Senac SP");
         Usuario mesa = garantirUsuario("Mesa Diretora ONU", "mesa@mov.com", "Senac@2026", TipoUsuario.MESA_DIRETORA, "Senac SP");
         garantirUsuario("Equipe de Imprensa", "imprensa@mov.com", "Senac@2026", TipoUsuario.IMPRENSA, "Senac SP");

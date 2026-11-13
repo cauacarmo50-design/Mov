@@ -35,10 +35,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         Usuario usuario = opt.orElseThrow(() ->
                 new UsernameNotFoundException("Participante não encontrado: " + identificador));
 
-        if (usuario.getContaBloqueadaAte() != null && usuario.getContaBloqueadaAte().isAfter(LocalDateTime.now())) {
-            throw new LockedException("Conta temporariamente bloqueada por excesso de tentativas falhas. Tente novamente mais tarde.");
-        }
-
         return new CustomUserDetails(usuario);
     }
 }

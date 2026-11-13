@@ -24,26 +24,6 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
     @Transactional
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
         String email = (String) event.getAuthentication().getPrincipal();
-
-        usuarioRepository.findByEmail(email).ifPresent(usuario -> {
-            if (usuario.getContaBloqueadaAte() != null && usuario.getContaBloqueadaAte().isAfter(LocalDateTime.now())) {
-                log.warn("Tentativa de login em conta bloqueada: {}", email);
-                return;
-            }
-
-            int tentativas = usuario.getTentativasFalhasLogin() == null ? 0 : usuario.getTentativasFalhasLogin();
-            tentativas++;
-
-            if (tentativas >= MAX_FAILED_ATTEMPTS) {
-                usuario.setContaBloqueadaAte(LocalDateTime.now().plusMinutes(LOCK_TIME_MINUTES));
-                usuario.setTentativasFalhasLogin(0);
-                log.warn("Conta bloqueada por excesso de falhas: {}", email);
-            } else {
-                usuario.setTentativasFalhasLogin(tentativas);
-                log.info("Falha de login número {} para o usuário: {}", tentativas, email);
-            }
-            
-            usuarioRepository.save(usuario);
-        });
+        log.info("Tentativa de login com senha incorreta para: {}", email);
     }
 }
