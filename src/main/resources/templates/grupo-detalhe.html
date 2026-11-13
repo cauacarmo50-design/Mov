@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'M.O.V. - ' + ${grupo.nome}">M.O.V. - Espaço da Delegação</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/dashboard}" class="nav-link">← Painel Principal</a>
+        <a th:href="@{/grupos/{id}(id=${grupo.id})}" class="nav-link active" th:text="${grupo.paisDelegacao}">Minha Delegação</a>
+        <a th:href="@{/estudos}" class="nav-link">Acervo de Documentos</a>
+        <a th:href="@{/simulacao}" class="nav-link">Plenário / Simulação</a>
+        <a th:href="@{/consenso}" class="nav-link">Mesa de Consenso</a>
+        <a th:href="@{/perfil}" class="nav-link">Meu Perfil &amp; Senha</a>
+        <a th:if="${isOrganizacao}" th:href="@{/admin/piloto}" class="nav-link" style="background-color: #fef9c3; font-weight: 700;">⚙ Painel Organização</a>
+        <form th:action="@{/logout}" method="post" style="margin-top: auto; padding-top: 20px;">
+            <button type="submit" class="btn-outline" style="width: 100%;">Sair da Conta</button>
+        </form>
+    </nav>
+
+    <main class="main-content">
+        <!-- Alertas de retorno -->
+        <div th:if="${mensagemSucesso}" class="alert-box alert-success" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro}" class="alert-box alert-error" th:text="${mensagemErro}"></div>
+
+        <!-- Cabeçalho do Grupo / Delegação (Seção 3.1) -->
+        <header class="profile-header">
+            <div class="user-info">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <span class="badge badge-yellow" th:text="'Delegação: ' + ${grupo.paisDelegacao}">Delegação</span>
+                    <span class="badge badge-dark" th:if="${grupo.sigla != null and !grupo.sigla.isEmpty()}" th:text="${grupo.sigla}">BRA</span>
+                    <span class="badge badge-blue" th:text="${momentoAtual.descricao}">Fase do Evento</span>
+                    <span id="conn-status" class="badge badge-green">● Conectado (Rascunho Seguro)</span>
+                </div>
+                <h2 th:text="${grupo.nome}">Grupo — Delegação do Brasil</h2>
+                <p th:text="${grupo.descricao}">Ambiente restrito da delegação para organização documental e construção de argumentos e referências.</p>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <h3 th:text="${#lists.size(grupo.integrantes)}">2</h3>
+                    <p>Integrantes</p>
+                </div>
+                <div class="stat-item">
+                    <h3 th:text="${#lists.size(argumentos)}">0</h3>
+                    <p>Argumentos</p>
+                </div>
+                <div class="stat-item">
+                    <h3 th:text="${#lists.size(documentosGrupo)}">0</h3>
+                    <p>Docs do Grupo</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Integrantes Identificados do Grupo (Seção 3.1) -->
+        <section class="panel-card" style="margin-bottom: 25px; padding: 18px 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <strong style="font-size: 14px; color: #0A0A0C;">Integrantes Autorizados desta Delegação:</strong>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                        <span th:each="membro : ${grupo.integrantes}" class="badge badge-gray"
+                              th:text="${membro.nome + ' (' + membro.email + ')'}">Integrante</span>
+                        <span th:if="${#lists.isEmpty(grupo.integrantes)}" style="font-size: 13px; color: #71717a;">
+                            Nenhum estudante alocado ainda. A organização pode vincular participantes no Painel Administrativo.
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <span class="badge badge-green">🔒 Isolamento Ativo: Protegido contra outros grupos</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO CENTRAL 3.3: ARQUIVO COMPARTILHADO DE ARGUMENTOS, FONTES E CONTRAPONTOS -->
+        <section class="panel-card" style="margin-bottom: 30px; border-top: 4px solid #FFC100;">
+            <div class="section-title">
+                <div>
+                    <h2>1. Arquivo Compartilhado de Argumentos, Fontes e Contrapontos</h2>
+                    <p style="font-size: 13px; color: #71717a; font-weight: 400; margin-top: 4px;">
+                        Registre posicionamentos, justificativas, fontes bibliográficas/links e contrapontos. Todas as alterações possuem identificação de autoria e histórico de versões.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Formulário para Novo Registro no Arquivo Compartilhado -->
+            <form th:if="${podeEditar}" th:action="@{/grupos/{id}/argumentos(id=${grupo.id})}" method="post" id="form-novo-argumento"
+                  style="background: #fafafa; padding: 20px; border-radius: 8px; border: 1px solid #e4e4e7; margin-bottom: 25px;">
+                <h3 style="font-size: 15px; margin-bottom: 14px; color: #0A0A0C;">+ Inserir Nova Contribuição no Arquivo Compartilhado</h3>
+
+                <div class="input-row">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="delegacao">Delegação (País Representado)</label>
+                        <input type="text" id="delegacao" name="delegacao" th:value="${grupo.paisDelegacao}" required>
+                    </div>
+                    <div class="input-group" style="flex: 2;">
+                        <label for="fonte">Fonte / Referência Utilizada</label>
+                        <input type="text" id="fonte" name="fonte" placeholder="Ex.: Resolução ONU A/RES/78, Relatório UNESCO 2025, Artigo UFSC...">
+                    </div>
+                    <div class="input-group" style="flex: 2;">
+                        <label for="linkFonte">Link da Fonte (URL, quando disponível)</label>
+                        <input type="text" id="linkFonte" name="linkFonte" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="argumento">Argumento (Posição ou afirmação defendida) *</label>
+                        <textarea id="argumento" name="argumento" rows="3" required placeholder="Descreva com clareza a posição ou tese defendida pela delegação..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="justificativa">Justificativa (Explicação que fundamenta o argumento)</label>
+                        <textarea id="justificativa" name="justificativa" rows="3" placeholder="Explique os dados, fatos históricos ou jurídicos que sustentam esta posição..."></textarea>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="contraponto">Contraponto (Argumento contrário previsto ou resposta a outra delegação)</label>
+                    <textarea id="contraponto" name="contraponto" rows="2" placeholder="Registre possíveis objeções de outros países ou a resposta preparada pela sua delegação..."></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #27272a;">
+                        <input type="checkbox" name="compartilhadoPlenario" value="true" checked style="accent-color: #FFC100; width: 16px; height: 16px;">
+                        <span>Disponibilizar este registro também para consulta no Plenário / Mesa Diretora</span>
+                    </label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="draft-indicator" style="font-size: 12px; color: #71717a;">Rascunho automático ativo</span>
+                        <button type="submit" class="btn-action" style="width: auto; padding: 10px 24px;">Salvar no Arquivo Compartilhado</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Tabela Estruturada de Argumentos (Seção 3.3) -->
+            <div class="table-responsive">
+                <table class="mov-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 11%;">Delegação</th>
+                            <th style="width: 22%;">Argumento</th>
+                            <th style="width: 22%;">Justificativa</th>
+                            <th style="width: 16%;">Fonte &amp; Link</th>
+                            <th style="width: 17%;">Contraponto</th>
+                            <th style="width: 12%;">Autoria &amp; Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="arg : ${argumentos}">
+                            <td>
+                                <strong th:text="${arg.delegacao}">Brasil</strong>
+                                <div style="margin-top: 6px;">
+                                    <span class="badge badge-yellow" th:text="'v' + ${arg.numeroVersao}">v1</span>
+                                    <span th:if="${arg.compartilhadoPlenario}" class="badge badge-blue" title="Visível no Plenário">Plenário</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: #0A0A0C; white-space: pre-line;" th:text="${arg.argumento}">Argumento</div>
+                            </td>
+                            <td>
+                                <div style="white-space: pre-line; color: #3f3f46;" th:text="${arg.justificativa != null and !arg.justificativa.isEmpty() ? arg.justificativa : '—'}">Justificativa</div>
+                            </td>
+                            <td>
+                                <div th:if="${arg.fonte != null and !arg.fonte.isEmpty()}" style="font-weight: 600; margin-bottom: 4px;" th:text="${arg.fonte}">Fonte</div>
+                                <div th:if="${arg.fonte == null or arg.fonte.isEmpty()}" style="color: #a1a1aa;">Não informada</div>
+                                <a th:if="${arg.linkFonte != null and !arg.linkFonte.isEmpty()}"
+                                   th:href="${arg.linkFonte}" target="_blank" rel="noopener noreferrer"
+                                   style="font-size: 12px; color: #1d4ed8; word-break: break-all; text-decoration: underline;">
+                                    🔗 Abrir Link da Fonte
+                                </a>
+                            </td>
+                            <td>
+                                <div th:if="${arg.contraponto != null and !arg.contraponto.isEmpty()}" style="white-space: pre-line; background: #fffbeb; padding: 8px; border-radius: 6px; border-left: 3px solid #FFC100;" th:text="${arg.contraponto}">Contraponto</div>
+                                <div th:if="${arg.autorContrapontoNome != null}" style="font-size: 11px; color: #71717a; margin-top: 4px;"
+                                     th:text="'Por: ' + ${arg.autorContrapontoNome}"></div>
+                                <details th:if="${podeEditar}" style="margin-top: 8px;">
+                                    <summary style="font-size: 12px; font-weight: 600; cursor: pointer; color: #0A0A0C;">+ Registrar Contraponto</summary>
+                                    <form th:action="@{/grupos/{id}/argumentos/{argId}/contraponto(id=${grupo.id},argId=${arg.id})}" method="post" style="margin-top: 8px;">
+                                        <textarea name="contraponto" rows="2" required placeholder="Digite o contraponto ou resposta..." th:text="${arg.contraponto}" style="font-size: 12px; min-height: 55px;"></textarea>
+                                        <button type="submit" class="btn-secondary" style="margin-top: 6px; width: 100%; padding: 6px;">Salvar Contraponto</button>
+                                    </form>
+                                </details>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px; color: #27272a;">
+                                    <strong>Autor:</strong> <span th:text="${arg.autor != null ? arg.autor.nome : 'Participante'}">Autor</span>
+                                </div>
+                                <div th:if="${arg.ultimoEditor != null}" style="font-size: 11px; color: #71717a; margin-top: 2px;">
+                                    Ed.: <span th:text="${arg.ultimoEditor.nome}">Editor</span>
+                                </div>
+                                <div style="font-size: 11px; color: #71717a; margin-top: 2px;"
+                                     th:text="${arg.dataAtualizacao != null ? #temporals.format(arg.dataAtualizacao, 'dd/MM HH:mm') : ''}">Data</div>
+
+                                <!-- Edição do Registro -->
+                                <details th:if="${podeEditar}" style="margin-top: 8px;">
+                                    <summary style="font-size: 12px; font-weight: 600; cursor: pointer; color: #1d4ed8;">✏ Editar Registro</summary>
+                                    <form th:action="@{/grupos/{id}/argumentos/{argId}/editar(id=${grupo.id},argId=${arg.id})}" method="post"
+                                          style="margin-top: 8px; background: #ffffff; padding: 10px; border: 1px solid #d4d4d8; border-radius: 6px;">
+                                        <input type="hidden" name="delegacao" th:value="${arg.delegacao}">
+                                        <label style="font-size: 11px; font-weight: 600;">Argumento:</label>
+                                        <textarea name="argumento" rows="2" required style="font-size: 12px; min-height: 50px; margin-bottom: 6px;" th:text="${arg.argumento}"></textarea>
+                                        <label style="font-size: 11px; font-weight: 600;">Justificativa:</label>
+                                        <textarea name="justificativa" rows="2" style="font-size: 12px; min-height: 50px; margin-bottom: 6px;" th:text="${arg.justificativa}"></textarea>
+                                        <label style="font-size: 11px; font-weight: 600;">Fonte:</label>
+                                        <input type="text" name="fonte" th:value="${arg.fonte}" style="font-size: 12px; padding: 6px; margin-bottom: 6px; width: 100%;">
+                                        <label style="font-size: 11px; font-weight: 600;">Link:</label>
+                                        <input type="text" name="linkFonte" th:value="${arg.linkFonte}" style="font-size: 12px; padding: 6px; margin-bottom: 6px; width: 100%;">
+                                        <label style="font-size: 11px; font-weight: 600;">Contraponto:</label>
+                                        <textarea name="contraponto" rows="2" style="font-size: 12px; min-height: 45px; margin-bottom: 6px;" th:text="${arg.contraponto}"></textarea>
+                                        <label style="font-size: 11px; display: flex; align-items: center; gap: 4px; margin-bottom: 8px;">
+                                            <input type="checkbox" name="compartilhadoPlenario" value="true" th:checked="${arg.compartilhadoPlenario}"> Visível no Plenário
+                                        </label>
+                                        <button type="submit" class="btn-action" style="padding: 6px 10px; font-size: 12px;">Salvar Nova Versão</button>
+                                    </form>
+                                </details>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(argumentos)}">
+                            <td colspan="6" style="text-align: center; padding: 30px; color: #71717a;">
+                                Nenhum argumento registrado ainda neste arquivo compartilhado. Utilize o formulário acima para registrar o primeiro argumento e fonte da delegação.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Histórico de Alterações e Recuperação de Versões Anteriores (Seção 3.3 e 6.1) -->
+            <details style="margin-top: 10px; background: #fafafa; padding: 14px 18px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                <summary style="font-weight: 700; font-size: 14px; cursor: pointer; color: #0A0A0C;">
+                    🕒 Histórico de Alterações e Recuperação de Versões Anteriores (<span th:text="${#lists.size(historicoGrupo)}">0</span> versões salvas)
+                </summary>
+                <div class="table-responsive" style="margin-top: 14px; margin-bottom: 0;">
+                    <table class="mov-table">
+                        <thead>
+                            <tr>
+                                <th>Versão / Ação</th>
+                                <th>Autor da Alteração</th>
+                                <th>Data e Horário</th>
+                                <th>Conteúdo Registrado (Argumento / Fonte / Contraponto)</th>
+                                <th th:if="${podeEditar}">Recuperação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="h : ${historicoGrupo}">
+                                <td>
+                                    <span class="badge badge-dark" th:text="'v' + ${h.numeroVersao}">v1</span>
+                                    <span class="badge badge-gray" th:text="${h.tipoAlteracao}">CRIAÇÃO</span>
+                                </td>
+                                <td th:text="${h.autorAlteracao != null ? h.autorAlteracao.nome : 'Sistema'}">Autor</td>
+                                <td th:text="${h.dataAlteracao != null ? #temporals.format(h.dataAlteracao, 'dd/MM/yyyy HH:mm:ss') : ''}">Data</td>
+                                <td>
+                                    <div><strong>Arg:</strong> <span th:text="${h.argumento}"></span></div>
+                                    <div th:if="${h.fonte != null and !h.fonte.isEmpty()}" style="font-size: 12px; color: #52525b;"><strong>Fonte:</strong> <span th:text="${h.fonte}"></span></div>
+                                    <div th:if="${h.contraponto != null and !h.contraponto.isEmpty()}" style="font-size: 12px; color: #52525b;"><strong>Contraponto:</strong> <span th:text="${h.contraponto}"></span></div>
+                                </td>
+                                <td th:if="${podeEditar}">
+                                    <form th:action="@{/grupos/{id}/historico/{histId}/restaurar(id=${grupo.id},histId=${h.id})}" method="post">
+                                        <button type="submit" class="btn-outline" style="font-size: 12px; padding: 5px 10px;">↺ Restaurar Versão</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(historicoGrupo)}">
+                                <td colspan="5" style="text-align: center; color: #71717a;">Nenhuma versão registrada ainda.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+
+        <!-- SEÇÃO 2: DOCUMENTO DE POSIÇÃO / RASCUNHO COLABORATIVO DO GRUPO -->
+        <section class="panel-card" style="margin-bottom: 30px;">
+            <div class="section-title">
+                <div>
+                    <h2>2. Síntese / Documento de Posição Colaborativo da Delegação</h2>
+                    <p style="font-size: 13px; color: #71717a; font-weight: 400; margin-top: 4px;">
+                        Espaço livre com <strong>salvamento automático no servidor</strong> para os integrantes redigirem em conjunto o discurso de abertura ou projeto de resolução da delegação.
+                    </p>
+                </div>
+                <span id="status-autosave-texto" class="badge badge-green"
+                      th:text="${grupo.ultimoEditorTextoNome != null ? '✓ Salvo por ' + grupo.ultimoEditorTextoNome + (grupo.dataAtualizacaoTexto != null ? ' às ' + #temporals.format(grupo.dataAtualizacaoTexto, 'dd/MM HH:mm') : '') : '✓ Salvamento automático ativo'}">
+                </span>
+            </div>
+            <form id="form-texto-colaborativo" th:action="@{/grupos/{id}/texto-colaborativo(id=${grupo.id})}" method="post">
+                <textarea id="texto-colaborativo-area" name="textoColaborativo" rows="6" th:readonly="${!podeEditar}"
+                          style="width: 100%; font-size: 14px; line-height: 1.6; margin-bottom: 12px;"
+                          th:text="${grupo.textoColaborativo}"></textarea>
+                <div th:if="${podeEditar}" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #71717a;">O texto é salvo automaticamente no banco de dados após 1,5s sem digitar.</span>
+                    <button type="submit" class="btn-secondary">Salvar Agora</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- SEÇÃO 3.2: INSERÇÃO E DISPONIBILIZAÇÃO DE DOCUMENTOS DO GRUPO E DA SIMULAÇÃO -->
+        <section class="panel-card" style="margin-bottom: 30px;">
+            <div class="section-title">
+                <div>
+                    <h2>3. Documentos da Delegação e Materiais Oficiais</h2>
+                    <p style="font-size: 13px; color: #71717a; font-weight: 400; margin-top: 4px;">
+                        Formatos suportados: PDF, DOCX, XLSX, CSV, TXT, PNG e JPG (até 20 MB por arquivo). Documentos enviados neste grupo ficam restritos à sua delegação.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Formulário de Upload de Documento para o Grupo -->
+            <form th:if="${podeEditar}" th:action="@{/documentos/upload}" method="post" enctype="multipart/form-data"
+                  style="background: #fafafa; padding: 18px; border-radius: 8px; border: 1px solid #e4e4e7; margin-bottom: 25px;">
+                <input type="hidden" name="grupoId" th:value="${grupo.id}">
+                <input type="hidden" name="origem" th:value="'/grupos/' + ${grupo.id}">
+                <h3 style="font-size: 15px; margin-bottom: 12px;">+ Inserir Documento no Espaço da Delegação</h3>
+                <div class="input-row">
+                    <div class="input-group" style="flex: 2;">
+                        <label>Título do Documento *</label>
+                        <input type="text" name="titulo" required placeholder="Ex.: Documento de Posição — Delegação do Brasil">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Categoria / Tipo</label>
+                        <select name="tipoDocumento">
+                            <option th:each="t : ${tiposDocumento}" th:value="${t}" th:text="${t.rotulo}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 2;">
+                        <label>Arquivo (PDF, DOCX, XLSX, TXT, PNG, JPG) *</label>
+                        <input type="file" name="arquivo" required accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.md,.png,.jpg,.jpeg">
+                    </div>
+                </div>
+                <div class="input-row" style="align-items: center;">
+                    <div class="input-group" style="flex: 3; margin-bottom: 0;">
+                        <input type="text" name="descricao" placeholder="Breve descrição ou observação sobre o documento (opcional)...">
+                    </div>
+                    <div style="flex: 1; text-align: right;">
+                        <button type="submit" class="btn-action">Enviar Documento</button>
+                    </div>
+                </div>
+            </form>
+
+            <h3 style="font-size: 15px; margin-bottom: 12px; color: #0A0A0C;">📁 Documentos Exclusivos desta Delegação (<span th:text="${grupo.nome}"></span>)</h3>
+            <div class="debates-grid" style="margin-bottom: 25px;">
+                <div class="article-card" th:each="doc : ${documentosGrupo}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="article-tag" th:text="${doc.tipoDocumento.rotulo}">Posição</span>
+                        <span class="badge badge-gray" th:text="${doc.tamanhoFormatado}">12 KB</span>
+                    </div>
+                    <h3 class="article-title" th:text="${doc.titulo}">Título do Documento</h3>
+                    <p class="article-desc" th:text="${doc.descricao != null and !doc.descricao.isEmpty() ? doc.descricao : doc.nomeOriginal}">Descrição</p>
+                    <div style="font-size: 12px; color: #71717a; margin-bottom: 14px;">
+                        <div><strong>Espaço:</strong> <span th:text="${grupo.nome}">Grupo</span></div>
+                        <div><strong>Enviado por:</strong> <span th:text="${doc.enviadoPor != null ? doc.enviadoPor.nome : 'Organização'}">Autor</span></div>
+                        <div><strong>Consultas:</strong> <span th:text="${doc.totalConsultas}">0</span></div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: auto;">
+                        <a th:href="@{/documentos/{id}/visualizar(id=${doc.id})}" target="_blank" class="btn-outline" style="flex: 1; text-align: center;">👁 Abrir / Visualizar</a>
+                        <a th:href="@{/documentos/{id}/download(id=${doc.id})}" class="btn-secondary" style="flex: 1; text-align: center;">⬇ Baixar</a>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(documentosGrupo)}" style="grid-column: 1 / -1; padding: 20px; background: #fafafa; border-radius: 8px; text-align: center; color: #71717a;">
+                    Nenhum documento exclusivo enviado para esta delegação ainda.
+                </div>
+            </div>
+
+            <h3 style="font-size: 15px; margin-bottom: 12px; color: #0A0A0C;">🌐 Documentos Gerais da Simulação (Disponíveis a Todos os Participantes)</h3>
+            <div class="debates-grid">
+                <div class="article-card" th:each="doc : ${documentosGerais}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="article-tag" th:text="${doc.tipoDocumento.rotulo}">Oficial</span>
+                        <span class="badge badge-blue">Geral da Simulação</span>
+                    </div>
+                    <h3 class="article-title" th:text="${doc.titulo}">Guia Oficial</h3>
+                    <p class="article-desc" th:text="${doc.descricao}">Descrição</p>
+                    <div style="display: flex; gap: 10px; margin-top: auto;">
+                        <a th:href="@{/documentos/{id}/visualizar(id=${doc.id})}" target="_blank" class="btn-outline" style="flex: 1; text-align: center;">👁 Abrir / Visualizar</a>
+                        <a th:href="@{/documentos/{id}/download(id=${doc.id})}" class="btn-secondary" style="flex: 1; text-align: center;">⬇ Baixar</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script de Resiliência Offline (Salvamento de Rascunho Local contra quedas de conexão - Seção 7 e 12) -->
+    <script th:inline="javascript">
+        (function() {
+            const grupoId = /*[[${grupo.id}]]*/ 'default';
+            const storagePrefix = 'mov_draft_' + grupoId + '_';
+            const fields = ['argumento', 'justificativa', 'fonte', 'linkFonte', 'contraponto'];
+            const form = document.getElementById('form-novo-argumento');
+            const indicator = document.getElementById('draft-indicator');
+            const connBadge = document.getElementById('conn-status');
+
+            if (form) {
+                // Restaura rascunho se houve queda de conexão ou recarregamento
+                let restored = false;
+                fields.forEach(function(f) {
+                    const el = document.getElementById(f);
+                    const saved = localStorage.getItem(storagePrefix + f);
+                    if (el && saved && !el.value) {
+                        el.value = saved;
+                        restored = true;
+                    }
+                    if (el) {
+                        el.addEventListener('input', function() {
+                            localStorage.setItem(storagePrefix + f, el.value);
+                            if (indicator) indicator.textContent = '✓ Rascunho salvo no dispositivo (' + new Date().toLocaleTimeString() + ')';
+                        });
+                    }
+                });
+
+                if (restored && indicator) {
+                    indicator.textContent = '↺ Rascunho anterior recuperado automaticamente!';
+                }
+
+                form.addEventListener('submit', function() {
+                    fields.forEach(function(f) {
+                        localStorage.removeItem(storagePrefix + f);
+                    });
+                });
+            }
+
+            // Salvamento Automático no Banco de Dados (AJAX) para o Documento Colaborativo da Delegação
+            const areaTexto = document.getElementById('texto-colaborativo-area');
+            const formTexto = document.getElementById('form-texto-colaborativo');
+            const badgeTexto = document.getElementById('status-autosave-texto');
+            let timerAutoSave = null;
+
+            if (areaTexto && formTexto && !areaTexto.readOnly) {
+                areaTexto.addEventListener('input', function() {
+                    if (badgeTexto) {
+                        badgeTexto.textContent = '⟳ Salvando alterações automaticamente...';
+                        badgeTexto.className = 'badge badge-yellow';
+                    }
+                    if (timerAutoSave) clearTimeout(timerAutoSave);
+                    timerAutoSave = setTimeout(function() {
+                        const csrfInput = formTexto.querySelector('input[name="_csrf"]');
+                        const params = new URLSearchParams();
+                        params.append('textoColaborativo', areaTexto.value);
+                        if (csrfInput) params.append('_csrf', csrfInput.value);
+
+                        fetch('/api/grupos/' + grupoId + '/texto-colaborativo', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params.toString()
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data.sucesso && badgeTexto) {
+                                badgeTexto.textContent = '✓ Salvo automaticamente por ' + data.ultimoEditor + ' (' + data.horario + ')';
+                                badgeTexto.className = 'badge badge-green';
+                            }
+                        })
+                        .catch(function() {
+                            localStorage.setItem(storagePrefix + 'texto_colab', areaTexto.value);
+                            if (badgeTexto) {
+                                badgeTexto.textContent = '⚠ Salvo no rascunho local do navegador (aguardando rede)';
+                                badgeTexto.className = 'badge badge-yellow';
+                            }
+                        });
+                    }, 1500);
+                });
+            }
+
+            window.addEventListener('online', function() {
+                if (connBadge) {
+                    connBadge.textContent = '● Conectado (Rascunho Seguro)';
+                    connBadge.className = 'badge badge-green';
+                }
+            });
+            window.addEventListener('offline', function() {
+                if (connBadge) {
+                    connBadge.textContent = '⚠ Sem conexão Wi-Fi — Seus textos estão salvos no rascunho local';
+                    connBadge.className = 'badge badge-yellow';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

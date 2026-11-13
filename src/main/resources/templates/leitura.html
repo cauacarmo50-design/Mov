@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Leitura e Preparação</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/inicio}" class="nav-link">Início / Regras</a>
+        <a th:href="@{/dashboard}" class="nav-link">Minhas Delegações &amp; Debates</a>
+        <a th:href="@{/estudos}" class="nav-link active">Documentos e Acervo</a>
+    </nav>
+    <main class="main-content">
+        <div class="content-wrapper">
+            <div class="header-leitura" style="margin-bottom: 25px;">
+                <h1>Documentos Base da Simulação Presencial da ONU</h1>
+                <p>Consulte e baixe os documentos disponibilizados para a preparação e condução do debate.</p>
+            </div>
+
+            <div class="debates-grid">
+                <div class="article-card" th:each="doc : ${documentos}">
+                    <span class="article-tag" th:text="${doc.tipoDocumento.rotulo}">Documento Oficial</span>
+                    <h3 class="article-title" th:text="${doc.titulo}">Título</h3>
+                    <p class="article-desc" th:text="${doc.descricao}">Descrição</p>
+                    <div style="display: flex; gap: 10px; margin-top: auto;">
+                        <a th:href="@{/documentos/{id}/visualizar(id=${doc.id})}" target="_blank" class="btn-outline" style="flex: 1; text-align: center;">Abrir PDF / Arquivo</a>
+                        <a th:href="@{/documentos/{id}/download(id=${doc.id})}" class="btn-secondary" style="flex: 1; text-align: center;">Baixar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="confirmation-area" style="margin-top: 25px;">
+                <a th:href="@{/simulacao}" class="btn-enter-room">Ir para o Plenário de Argumentos →</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

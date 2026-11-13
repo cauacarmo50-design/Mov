@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Mesa de Consenso e Síntese</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/dashboard}" class="sidebar-item">← Voltar ao Painel</a>
+        <a th:href="@{/simulacao}" class="sidebar-item">Plenário de Argumentos</a>
+        <a th:href="@{/consenso}" class="sidebar-item active">Mesa de Consenso</a>
+        <a th:href="@{/estudos}" class="sidebar-item">Documentos da Simulação</a>
+        <a th:href="@{/perfil}" class="sidebar-item">Meu Perfil &amp; Senha</a>
+        <a th:href="@{/regrasdasala}" class="sidebar-item">Regras da Sala</a>
+    </div>
+
+    <div class="main-content">
+        <div th:if="${mensagemSucesso}" class="alert-box alert-success" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro}" class="alert-box alert-error" th:text="${mensagemErro}"></div>
+
+        <div class="header">
+            <h1>Consulta de Argumentos, Fontes e Construção de Resolução</h1>
+            <p>Consulte os posicionamentos fundamentados pelas delegações e elabore a proposta de resolução do grupo.</p>
+        </div>
+
+        <div class="consenso-container">
+            <div class="argumentos-validados">
+                <h3 style="margin-bottom: 15px;">Contribuições Registradas pelas Delegações</h3>
+
+                <div class="arg-card" th:each="arg : ${argumentosPlenario}">
+                    <span class="badge badge-yellow" th:text="${arg.delegacao}">Delegação</span>
+                    <p style="margin-top: 8px; font-weight: 600;" th:text="${arg.argumento}">Argumento</p>
+                    <p th:if="${arg.justificativa != null and !arg.justificativa.isEmpty()}" style="font-size: 13px; color: #3f3f46; margin-top: 4px;" th:text="${arg.justificativa}"></p>
+                    <div class="arg-autor">
+                        <span th:text="${arg.autor != null ? arg.autor.nome : 'Delegado'}"></span>
+                        <span th:if="${arg.fonte != null and !arg.fonte.isEmpty()}" th:text="' • Fonte: ' + ${arg.fonte}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="editor-colaborativo" th:if="${meusGrupos != null and !#lists.isEmpty(meusGrupos)}">
+                <div class="panel-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 th:text="'Documento Colaborativo — ' + ${meusGrupos[0].nome}">Documento Final</h3>
+                        <span class="badge badge-green">Persistência Ativa</span>
+                    </div>
+                    <form th:action="@{/grupos/{id}/texto-colaborativo(id=${meusGrupos[0].id})}" method="post">
+                        <textarea name="textoColaborativo" rows="12" style="width: 100%; margin-bottom: 15px;"
+                                  th:text="${meusGrupos[0].textoColaborativo}"></textarea>
+                        <button type="submit" class="btn-aprovar">Salvar Proposta de Resolução</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

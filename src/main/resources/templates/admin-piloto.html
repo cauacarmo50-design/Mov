@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Painel da Organização &amp; Relatório Piloto (Senac SP)</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/dashboard}" class="nav-link">← Voltar ao Dashboard</a>
+        <a th:href="@{/admin/piloto}" class="nav-link active">⚙ Painel Organização</a>
+        <a href="#secao-indicadores" class="nav-link">📊 Indicadores &amp; Exportação</a>
+        <a href="#secao-grupos" class="nav-link">🏳 Grupos / Delegações</a>
+        <a href="#secao-participantes" class="nav-link">👥 Participantes &amp; Contas</a>
+        <a href="#secao-documentos" class="nav-link">📁 Documentos Oficiais</a>
+        <a href="#secao-problemas" class="nav-link">🛠 Suporte &amp; Auditoria</a>
+        <a th:href="@{/simulacao}" class="nav-link">🌐 Plenário ao Vivo</a>
+    </nav>
+
+    <main class="main-content">
+        <div th:if="${mensagemSucesso}" class="alert-box alert-success" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro}" class="alert-box alert-error" th:text="${mensagemErro}"></div>
+
+        <!-- Cabeçalho Administrativo e Controle de Fase (Seção 4.2 e 5) -->
+        <header class="profile-header">
+            <div class="user-info">
+                <span class="badge badge-yellow">Equipe de Organização M.O.V. • Projeto-Piloto Senac SP</span>
+                <h2 style="margin-top: 8px;">Administração da Simulação Presencial da ONU</h2>
+                <p>Gerencie delegações, participantes, documentos, permissões e extraia os indicadores consolidados para o relatório institucional do Senac SP.</p>
+            </div>
+            <div style="background: #fafafa; padding: 15px 20px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                <form th:action="@{/admin/momento}" method="post" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #52525b;">Momento da Simulação (Seção 5):</label>
+                    <select name="momento" style="padding: 8px 12px; border: 1px solid #d4d4d8; border-radius: 6px; font-weight: 600;">
+                        <option th:each="m : ${momentos}" th:value="${m}" th:text="${m.descricao}" th:selected="${m == momentoAtual}"></option>
+                    </select>
+                    <button type="submit" class="btn-secondary">Atualizar Fase</button>
+                </form>
+            </div>
+        </header>
+
+        <!-- SEÇÃO 6: REGISTRO DE DADOS, INDICADORES E EXPORTAÇÃO (RELATÓRIO SENAC SP) -->
+        <section id="secao-indicadores" class="panel-card" style="margin-bottom: 30px; border-top: 4px solid #FFC100;">
+            <div class="section-title">
+                <div>
+                    <h2>1. Indicadores de Utilização e Exportação de Dados (Seção 6 — Relatório Senac SP)</h2>
+                    <p style="font-size: 13px; color: #71717a; font-weight: 400; margin-top: 4px;">
+                        Evidências concretas sobre a utilização da plataforma. Exportação agregada e anonimizada por padrão em conformidade com a LGPD.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a th:href="@{/admin/exportar/xlsx(anonimizado=true)}" class="btn-action" style="width: auto; padding: 10px 16px;">
+                        📊 Exportar Excel (.XLSX Anonimizado)
+                    </a>
+                    <a th:href="@{/admin/exportar/csv(anonimizado=true)}" class="btn-secondary" style="width: auto; padding: 10px 16px;">
+                        📄 Exportar CSV (Anonimizado)
+                    </a>
+                    <a th:href="@{/admin/exportar/csv(anonimizado=false)}" class="btn-outline" style="width: auto; padding: 10px 14px;">
+                        🔓 CSV Detalhado (Restrito)
+                    </a>
+                    <button type="button" onclick="window.print()" class="btn-outline" style="width: auto; padding: 10px 14px;">
+                        🖨 Imprimir Relatório
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cards de Indicadores (Seção 6) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div style="background: #fafafa; padding: 16px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 700;">Acessos (Usuários)</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.usuariosComAcesso}">0</div>
+                    <div style="font-size: 11px; color: #52525b;" th:text="'de ' + ${indicadores.totalUsuariosCadastrados} + ' contas (' + ${indicadores.totalLogins} + ' logins)'"></div>
+                </div>
+                <div style="background: #fafafa; padding: 16px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 700;">Participação Ativa</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.usuariosComContribuicao}">0</div>
+                    <div style="font-size: 11px; color: #52525b;">Usuários com contribuições</div>
+                </div>
+                <div style="background: #fafafa; padding: 16px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 700;">Grupos (Delegações)</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.totalGrupos}">0</div>
+                    <div style="font-size: 11px; color: #52525b;">Criados e utilizados</div>
+                </div>
+                <div style="background: #fafafa; padding: 16px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 700;">Documentos</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.totalDocumentos}">0</div>
+                    <div style="font-size: 11px; color: #52525b;" th:text="${indicadores.totalConsultasDocumentos} + ' consultas/downloads'"></div>
+                </div>
+                <div style="background: #fffbeb; padding: 16px; border-radius: 8px; border: 1px solid #fde047;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #854d0e; font-weight: 700;">Argumentos</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.totalArgumentos}">0</div>
+                    <div style="font-size: 11px; color: #854d0e;" th:text="${indicadores.totalAlteracoesHistorico} + ' versões salvas'"></div>
+                </div>
+                <div style="background: #fffbeb; padding: 16px; border-radius: 8px; border: 1px solid #fde047;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #854d0e; font-weight: 700;">Fontes Citadas</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.totalFontes}">0</div>
+                    <div style="font-size: 11px; color: #854d0e;">Referências compartilhadas</div>
+                </div>
+                <div style="background: #fffbeb; padding: 16px; border-radius: 8px; border: 1px solid #fde047;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #854d0e; font-weight: 700;">Contrapontos</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.totalContrapontos}">0</div>
+                    <div style="font-size: 11px; color: #854d0e;">Respostas estruturadas</div>
+                </div>
+                <div style="background: #fafafa; padding: 16px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 700;">Problemas Técnicos</div>
+                    <div style="font-size: 26px; font-weight: 700; color: #0A0A0C; margin-top: 4px;" th:text="${indicadores.totalProblemas}">0</div>
+                    <div style="font-size: 11px; color: #52525b;" th:text="${indicadores.problemasAbertos} + ' em aberto'"></div>
+                </div>
+            </div>
+
+            <!-- Tabela de Indicadores por Grupo / Delegação (Seção 6.1) -->
+            <h3 style="font-size: 15px; margin-bottom: 10px;">Desempenho e Atividade por Grupo / Delegação</h3>
+            <div class="table-responsive" style="margin-bottom: 0;">
+                <table class="mov-table">
+                    <thead>
+                        <tr>
+                            <th>Grupo</th>
+                            <th>País / Delegação</th>
+                            <th>Integrantes Alocados</th>
+                            <th>Usuários Ativos no Grupo</th>
+                            <th>Documentos</th>
+                            <th>Argumentos</th>
+                            <th>Fontes</th>
+                            <th>Contrapontos</th>
+                            <th>Acesso Rápido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="mg : ${indicadores.metricasPorGrupo}">
+                            <td><strong th:text="${mg.nome}">Grupo</strong></td>
+                            <td><span class="badge badge-yellow" th:text="${mg.paisDelegacao}">País</span></td>
+                            <td th:text="${mg.totalIntegrantes}">0</td>
+                            <td th:text="${mg.usuariosAtivos}">0</td>
+                            <td th:text="${mg.totalDocumentos}">0</td>
+                            <td><strong th:text="${mg.totalArgumentos}">0</strong></td>
+                            <td th:text="${mg.totalFontes}">0</td>
+                            <td th:text="${mg.totalContrapontos}">0</td>
+                            <td>
+                                <a th:href="@{/grupos/{id}(id=${mg.id})}" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Abrir Arquivo →</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3.1 E 4.2: CRIAÇÃO E GERENCIAMENTO DE GRUPOS E INTEGRANTES -->
+        <section id="secao-grupos" class="panel-card" style="margin-bottom: 30px;">
+            <div class="section-title">
+                <h2>2. Criação e Gerenciamento de Grupos (Delegações — Seção 3.1)</h2>
+            </div>
+
+            <div class="input-row" style="margin-bottom: 25px;">
+                <!-- Criar Novo Grupo -->
+                <form th:action="@{/admin/grupos/criar}" method="post" style="flex: 1.3; background: #fafafa; padding: 18px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <h3 style="font-size: 15px; margin-bottom: 12px;">+ Criar Novo Grupo de Delegação</h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Nome do Grupo *</label>
+                            <input type="text" name="nome" required placeholder="Ex.: Grupo — Delegação do Japão">
+                        </div>
+                        <div class="input-group">
+                            <label>País / Delegação *</label>
+                            <input type="text" name="paisDelegacao" required placeholder="Ex.: Japão">
+                        </div>
+                        <div class="input-group" style="max-width: 100px;">
+                            <label>Sigla</label>
+                            <input type="text" name="sigla" placeholder="JPN">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Descrição / Orientações para a Delegação</label>
+                        <input type="text" name="descricao" placeholder="Espaço oficial da delegação para documentos e argumentos...">
+                    </div>
+                    <button type="submit" class="btn-action">Criar Grupo na Plataforma</button>
+                </form>
+
+                <!-- Vincular Vários Integrantes a um Grupo de uma só vez -->
+                <form th:action="@{/admin/grupos/adicionar-multiplos}" method="post" style="flex: 1.2; background: #fafafa; padding: 18px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <h3 style="font-size: 15px; margin-bottom: 12px;">+ Adicionar Vários Participantes a um Grupo</h3>
+                    <div class="input-group">
+                        <label>1. Selecionar Grupo / Delegação de Destino *</label>
+                        <select name="grupoId" required>
+                            <option th:each="g : ${grupos}" th:value="${g.id}" th:text="${g.nome + ' (' + #lists.size(g.integrantes) + ' membros)'}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>2. Marque os Participantes (use a busca para filtrar rápido)</label>
+                        <input type="text" id="filtro-membros-lote" placeholder="🔍 Filtrar por nome ou e-mail..." oninput="filtrarCheckboxesMembros()"
+                               style="margin-bottom: 8px; padding: 7px 12px; font-size: 13px;">
+                        <div style="max-height: 135px; overflow-y: auto; background: #ffffff; border: 1px solid #d4d4d8; border-radius: 6px; padding: 8px;">
+                            <label th:each="u : ${usuarios}" class="item-membro-check"
+                                   style="display: flex; align-items: center; gap: 8px; padding: 5px 6px; font-weight: 400; font-size: 12.5px; cursor: pointer; border-bottom: 1px solid #f4f4f5;">
+                                <input type="checkbox" name="usuarioIds" th:value="${u.id}" style="width: auto; accent-color: #FFC100;">
+                                <span th:text="${u.nome + ' (' + u.email + ')'}"></span>
+                                <span class="badge badge-gray" style="margin-left: auto; font-size: 10px;" th:text="${u.tipo}"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-secondary" style="width: 100%; padding: 12px;">Vincular Todos os Selecionados ao Grupo</button>
+                </form>
+            </div>
+
+            <!-- Lista de Grupos e Integrantes Atuais -->
+            <div class="debates-grid" style="margin-bottom: 0;">
+                <div class="debate-card" th:each="g : ${grupos}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 6px; flex-wrap: wrap;">
+                        <span class="debate-category" th:text="${g.paisDelegacao}">Brasil</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 11px;"
+                                    th:attr="data-grupo-id=${g.id},data-grupo-nome=${g.nome}"
+                                    onclick="copiarLinkConvite(this)">
+                                🔗 Copiar Link de Convite
+                            </button>
+                            <a th:href="@{/grupos/{id}(id=${g.id})}" class="btn-outline" style="padding: 4px 10px; font-size: 12px;">Abrir →</a>
+                        </div>
+                    </div>
+                    <h3 th:text="${g.nome}">Grupo — Delegação do Brasil</h3>
+                    <p style="margin-bottom: 12px; font-size: 13px;" th:text="${g.descricao}"></p>
+
+                    <div style="border-top: 1px solid #e4e4e7; padding-top: 10px; margin-top: auto;">
+                        <strong style="font-size: 12px; color: #3f3f46;">Integrantes (<span th:text="${#lists.size(g.integrantes)}">0</span>):</strong>
+                        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                            <div th:each="m : ${g.integrantes}" style="display: flex; justify-content: space-between; align-items: center; background: #fafafa; padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                                <span th:text="${m.nome + ' (' + m.email + ')'}">Membro</span>
+                                <form th:action="@{/admin/grupos/remover-membro}" method="post" style="display: inline;">
+                                    <input type="hidden" name="grupoId" th:value="${g.id}">
+                                    <input type="hidden" name="usuarioId" th:value="${m.id}">
+                                    <button type="submit" style="background: none; border: none; color: #dc2626; cursor: pointer; font-weight: 700;" title="Remover do grupo">✕</button>
+                                </form>
+                            </div>
+                            <div th:if="${#lists.isEmpty(g.integrantes)}" style="font-size: 12px; color: #a1a1aa;">Sem integrantes vinculados.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 4 E 7: GERENCIAMENTO DE PARTICIPANTES, PERFIS E RECUPERAÇÃO DE ACESSO -->
+        <section id="secao-participantes" class="panel-card" style="margin-bottom: 30px;">
+            <div class="section-title">
+                <div>
+                    <h2>3. Participantes, Perfis e Recuperação de Credenciais (Seção 4 e 7)</h2>
+                    <p style="font-size: 13px; color: #71717a; font-weight: 400; margin-top: 4px;">
+                        Cadastre estudantes sem precisar acessar cada conta individualmente, aloque em delegações ou redefina senhas durante o evento presencial.
+                    </p>
+                </div>
+            </div>
+
+            <div class="input-row" style="margin-bottom: 25px;">
+                <!-- Cadastro Individual Rápido -->
+                <form th:action="@{/admin/participantes/criar}" method="post" style="flex: 1; background: #fafafa; padding: 18px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                    <h3 style="font-size: 15px; margin-bottom: 12px;">+ Cadastrar Participante / Equipe</h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Nome Completo *</label>
+                            <input type="text" name="nome" required placeholder="Nome completo do aluno (usado para login)">
+                        </div>
+                        <div class="input-group">
+                            <label>E-mail (Opcional — pode deixar em branco)</label>
+                            <input type="email" name="email" placeholder="Opcional (gerado automaticamente se vazio)">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Senha Inicial</label>
+                            <input type="text" name="senha" value="Senac@2026" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Perfil de Utilização (Seção 4)</label>
+                            <select name="tipo">
+                                <option th:each="p : ${perfis}" th:value="${p}" th:text="${p}"></option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Vincular ao Grupo (Opcional)</label>
+                            <select name="grupoId">
+                                <option value="">— Nenhum / Definir depois —</option>
+                                <option th:each="g : ${grupos}" th:value="${g.id}" th:text="${g.nome}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-action">Criar / Atualizar Conta</button>
+                </form>
+
+                <!-- Importação Inteligente em Massa (Excel / CSV) -->
+                <form th:action="@{/admin/participantes/lote}" method="post" enctype="multipart/form-data" style="flex: 1.3; background: #fffbeb; padding: 18px; border-radius: 8px; border: 1px solid #fde047;">
+                    <h3 style="font-size: 15px; margin-bottom: 8px;">⚡ Importação Rápida em Massa (Apenas Nome ou Planilha)</h3>
+                    <p style="font-size: 12px; color: #52525b; margin-bottom: 10px;">
+                        Cole <strong>1 aluno por linha</strong>! Aceita: <strong>Apenas Nome Completo</strong> (ex.: <code>João Pedro Silva</code>), ou <strong>País ; Nome Completo</strong> (ex.: <code>Brasil; João Pedro Silva</code> — já aloca na delegação sem precisar de e-mail!):
+                    </p>
+                    <div class="input-group" style="margin-bottom: 10px;">
+                        <textarea name="linhasParticipantes" rows="4" placeholder="Brasil; João Pedro da Silva&#10;Japão; Maria Eduarda Souza&#10;França; Carlos Henrique Lima&#10;Ou apenas o Nome Completo (1 por linha)"></textarea>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Ou envie um arquivo .CSV / .TXT</label>
+                            <input type="file" name="arquivoCsv" accept=".csv,.txt" style="padding: 6px; font-size: 12px;">
+                        </div>
+                        <div class="input-group">
+                            <label>Senha Padrão Inicial</label>
+                            <input type="text" name="senhaPadrao" value="Senac@2026">
+                        </div>
+                        <div class="input-group">
+                            <label>Grupo Padrão (se usar 2 colunas)</label>
+                            <select name="grupoId">
+                                <option value="">— Usar coluna País da planilha —</option>
+                                <option th:each="g : ${grupos}" th:value="${g.id}" th:text="${g.nome}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-action" style="width: 100%; padding: 12px;">Importar Todos os Participantes e Delegações Agora</button>
+                </form>
+            </div>
+
+            <!-- Tabela de Contas, Alocação de Grupo em 1 Clique e Recuperação de Senha -->
+            <div class="table-responsive" style="margin-bottom: 0;">
+                <table class="mov-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>E-mail (Login)</th>
+                            <th>Delegação / Grupo (Troca Rápida)</th>
+                            <th>Perfil de Acesso</th>
+                            <th>Recuperação Rápida de Senha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${usuarios}">
+                            <td><strong th:text="${u.nome}">Nome</strong></td>
+                            <td th:text="${u.email}">email@mov.com</td>
+                            <td>
+                                <form th:action="@{/admin/participantes/alocar-grupo}" method="post" style="display: flex; gap: 6px;">
+                                    <input type="hidden" name="usuarioId" th:value="${u.id}">
+                                    <select name="novoGrupoId" style="padding: 5px; font-size: 12px; border: 1px solid #d4d4d8; border-radius: 4px; max-width: 220px;">
+                                        <option value="">— Sem delegação —</option>
+                                        <option th:each="g : ${grupos}" th:value="${g.id}" th:text="${g.nome}"
+                                                th:selected="${g.contemIntegrante(u.id)}"></option>
+                                    </select>
+                                    <button type="submit" class="btn-outline" style="padding: 5px 8px; font-size: 11px;">Alocar</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/participantes/perfil}" method="post" style="display: flex; gap: 6px;">
+                                    <input type="hidden" name="usuarioId" th:value="${u.id}">
+                                    <select name="novoTipo" style="padding: 5px; font-size: 12px; border: 1px solid #d4d4d8; border-radius: 4px;">
+                                        <option th:each="p : ${perfis}" th:value="${p}" th:text="${p}" th:selected="${p == u.tipo}"></option>
+                                    </select>
+                                    <button type="submit" class="btn-outline" style="padding: 5px 8px; font-size: 11px;">Salvar</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/participantes/redefinir-senha}" method="post" style="display: flex; gap: 6px;">
+                                    <input type="hidden" name="usuarioId" th:value="${u.id}">
+                                    <input type="text" name="novaSenha" placeholder="Nova senha (ex: Senac@2026)" required
+                                           style="padding: 5px 8px; font-size: 12px; border: 1px solid #d4d4d8; border-radius: 4px; width: 155px;">
+                                    <button type="submit" class="btn-secondary" style="padding: 5px 10px; font-size: 11px;">Redefinir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3.2: DISPONIBILIZAÇÃO DE DOCUMENTOS PELA ORGANIZAÇÃO -->
+        <section id="secao-documentos" class="panel-card" style="margin-bottom: 30px;">
+            <div class="section-title">
+                <h2>4. Disponibilização de Documentos Oficiais e por Delegação (Seção 3.2)</h2>
+            </div>
+            <form th:action="@{/documentos/upload}" method="post" enctype="multipart/form-data"
+                  style="background: #fafafa; padding: 18px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                <input type="hidden" name="origem" value="/admin/piloto">
+                <div class="input-row">
+                    <div class="input-group" style="flex: 2;">
+                        <label>Título do Documento *</label>
+                        <input type="text" name="titulo" required placeholder="Ex.: Dossiê Oficial do Comitê ONU / Projeto de Resolução Base">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Categoria</label>
+                        <select name="tipoDocumento">
+                            <option th:each="t : ${tiposDocumento}" th:value="${t}" th:text="${t.rotulo}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1.5;">
+                        <label>Destinatário / Permissão de Acesso</label>
+                        <select name="grupoId">
+                            <option value="">🌐 Geral (Todos os Participantes e Mesa)</option>
+                            <option th:each="g : ${grupos}" th:value="${g.id}" th:text="'🔒 Exclusivo: ' + ${g.nome}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1.5;">
+                        <label>Arquivo *</label>
+                        <input type="file" name="arquivo" required accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.md,.png,.jpg,.jpeg">
+                    </div>
+                </div>
+                <div class="input-row" style="align-items: center;">
+                    <div class="input-group" style="flex: 3; margin-bottom: 0;">
+                        <input type="text" name="descricao" placeholder="Descrição detalhada do material...">
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                        <input type="checkbox" name="publicoGeral" value="true" checked> Visível no Acervo Geral
+                    </label>
+                    <button type="submit" class="btn-action" style="width: auto; padding: 10px 24px;">Publicar Documento</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- SEÇÃO 6 E 11: MONITORAMENTO DE PROBLEMAS TÉCNICOS E AUDITORIA -->
+        <section id="secao-problemas" class="panel-card">
+            <div class="section-title">
+                <h2>5. Suporte Técnico e Registro de Ocorrências (Seções 6, 9 e 11)</h2>
+            </div>
+
+            <div class="table-responsive">
+                <table class="mov-table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Participante / Grupo</th>
+                            <th>Categoria / Dispositivo</th>
+                            <th>Descrição do Problema</th>
+                            <th>Status &amp; Tratativa da Equipe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${problemas}">
+                            <td th:text="${p.dataRegistro != null ? #temporals.format(p.dataRegistro, 'dd/MM HH:mm') : ''}">Data</td>
+                            <td>
+                                <strong th:text="${p.usuario != null ? p.usuario.nome : 'Participante'}">Usuário</strong>
+                                <div th:if="${p.grupo != null}" style="font-size: 11px; color: #71717a;" th:text="${p.grupo.nome}">Grupo</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-yellow" th:text="${p.categoria}">Categoria</span>
+                                <div style="font-size: 11px; color: #71717a; margin-top: 4px;" th:text="${p.dispositivoInfo}">Dispositivo</div>
+                            </td>
+                            <td th:text="${p.descricao}">Descrição</td>
+                            <td>
+                                <form th:action="@{/admin/problemas/atualizar}" method="post" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    <input type="hidden" name="problemaId" th:value="${p.id}">
+                                    <select name="status" style="padding: 5px; font-size: 12px; border: 1px solid #d4d4d8; border-radius: 4px;">
+                                        <option value="ABERTO" th:selected="${p.status == 'ABERTO'}">ABERTO</option>
+                                        <option value="EM_ATENDIMENTO" th:selected="${p.status == 'EM_ATENDIMENTO'}">EM ATENDIMENTO</option>
+                                        <option value="RESOLVIDO" th:selected="${p.status == 'RESOLVIDO'}">RESOLVIDO</option>
+                                    </select>
+                                    <input type="text" name="respostaEquipe" th:value="${p.respostaEquipe}" placeholder="Observação técnica..."
+                                           style="padding: 5px 8px; font-size: 12px; border: 1px solid #d4d4d8; border-radius: 4px; flex: 1;">
+                                    <button type="submit" class="btn-outline" style="padding: 5px 10px; font-size: 11px;">Atualizar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(problemas)}">
+                            <td colspan="5" style="text-align: center; color: #71717a; padding: 20px;">
+                                Nenhum problema técnico registrado até o momento. Plataforma operando normalmente.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <details style="background: #fafafa; padding: 14px 18px; border-radius: 8px; border: 1px solid #e4e4e7;">
+                <summary style="font-weight: 700; font-size: 14px; cursor: pointer;">
+                    📋 Log Recente de Atividades e Auditoria de Segurança (<span th:text="${#lists.size(logs)}">0</span> eventos)
+                </summary>
+                <div class="table-responsive" style="margin-top: 12px; margin-bottom: 0; max-height: 360px; overflow-y: auto;">
+                    <table class="mov-table">
+                        <thead>
+                            <tr>
+                                <th>Horário</th>
+                                <th>Evento</th>
+                                <th>Usuário (Perfil)</th>
+                                <th>Grupo</th>
+                                <th>Dispositivo</th>
+                                <th>Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="l : ${logs}">
+                                <td th:text="${l.dataHora != null ? #temporals.format(l.dataHora, 'dd/MM HH:mm:ss') : ''}">Hora</td>
+                                <td><span class="badge badge-gray" th:text="${l.tipoEvento}">EVENTO</span></td>
+                                <td th:text="${l.usuarioNome + ' (' + l.usuarioPerfil + ')'}">Usuário</td>
+                                <td th:text="${l.grupoNome != null ? l.grupoNome : '—'}">Grupo</td>
+                                <td th:text="${l.dispositivo}">Dispositivo</td>
+                                <td th:text="${l.detalhes}">Detalhes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+    </main>
+
+    <script>
+        function filtrarCheckboxesMembros() {
+            const termo = (document.getElementById('filtro-membros-lote').value || '').toLowerCase();
+            document.querySelectorAll('.item-membro-check').forEach(function(item) {
+                const txt = item.textContent.toLowerCase();
+                item.style.display = txt.indexOf(termo) !== -1 ? 'flex' : 'none';
+            });
+        }
+
+        function copiarLinkConvite(btn) {
+            const grupoId = btn.getAttribute('data-grupo-id');
+            const url = window.location.origin + '/cadastro?grupoId=' + grupoId;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url);
+            }
+            const original = btn.textContent;
+            btn.textContent = '✓ Link Copiado!';
+            setTimeout(function() { btn.textContent = original; }, 2000);
+        }
+
+        // Navegação suave e destaque ativo nos botões do menu lateral do Painel Admin
+        document.querySelectorAll('.sidebar a[href^="#"]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                const targetId = link.getAttribute('href').substring(1);
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    e.preventDefault();
+                    document.querySelectorAll('.sidebar .nav-link').forEach(function(n) { n.classList.remove('active'); });
+                    link.classList.add('active');
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

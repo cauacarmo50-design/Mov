@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Criar Conta</title>
+    <script th:if="${captchaEnabled}" src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <div class="register-container">
+        <div class="brand-side">
+            <h1>M.O.V.</h1>
+            <p>Junte-se à Simulação Presencial das Nações Unidas (Projeto-Piloto Senac SP).</p>
+            <div class="brand-quote">
+                <p>"Sua voz. Seu argumento. Seu impacto."</p>
+            </div>
+        </div>
+
+        <div class="form-side">
+            <h2>Solicitar Acesso de Participante</h2>
+            <p>Preencha seus dados para acessar os recursos da sua delegação.</p>
+
+            <form th:action="@{/cadastrar}" method="post">
+                <div th:if="${mensagemErro}" class="alert-box alert-error" th:text="${mensagemErro}"></div>
+
+                <div class="input-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" name="nome" placeholder="Como será identificado no grupo e nos argumentos" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">E-mail (Opcional — você pode fazer login apenas com seu Nome Completo)</label>
+                    <input type="email" id="email" name="email" placeholder="Opcional: deixe em branco se preferir entrar pelo Nome Completo">
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="senha">Criar Senha</label>
+                        <input type="password" id="senha" name="senha" placeholder="Mínimo 6 caracteres" required>
+                    </div>
+                    <div class="input-group" th:if="${gruposDisponiveis != null and !#lists.isEmpty(gruposDisponiveis)}">
+                        <label for="grupoId">Sua Delegação / Grupo (Opcional)</label>
+                        <select id="grupoId" name="grupoId">
+                            <option value="">— Selecionar minha delegação —</option>
+                            <option th:each="g : ${gruposDisponiveis}"
+                                    th:value="${g.id}"
+                                    th:text="${g.nome}"
+                                    th:selected="${param.grupoId != null and param.grupoId[0] == g.id.toString()}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="termos" required>
+                    <label for="termos">Concordo com as diretrizes do piloto educacional M.O.V. — Senac SP e com o uso ético e fundamentado dos recursos da plataforma.</label>
+                </div>
+
+                <div th:if="${captchaEnabled}" class="cf-turnstile" th:attr="data-sitekey=${siteKey}" style="margin-bottom: 15px;"></div>
+
+                <button type="submit" class="btn-register">Finalizar Cadastro</button>
+            </form>
+
+            <div class="footer-link">
+                Já possui credenciais? <a th:href="@{/login}">Fazer Login</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

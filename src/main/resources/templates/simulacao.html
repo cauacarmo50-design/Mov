@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Plenário de Argumentos e Fontes</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/dashboard}" class="sidebar-item">← Voltar ao Painel</a>
+        <a th:if="${meusGrupos != null and !#lists.isEmpty(meusGrupos)}"
+           th:href="@{/grupos/{id}(id=${meusGrupos[0].id})}" class="sidebar-item">
+            🏳 Arquivo da Minha Delegação
+        </a>
+        <a th:href="@{/simulacao}" class="sidebar-item active">Plenário de Argumentos</a>
+        <a th:href="@{/consenso}" class="sidebar-item">Mesa de Consenso</a>
+        <a th:href="@{/estudos}" class="sidebar-item">Documentos da Simulação</a>
+        <a th:href="@{/perfil}" class="sidebar-item">Meu Perfil &amp; Senha</a>
+        <a th:href="@{/regrasdasala}" class="sidebar-item">Regras da Sala</a>
+    </div>
+
+    <div class="main-content">
+        <div th:if="${mensagemSucesso}" class="alert-box alert-success" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro}" class="alert-box alert-error" th:text="${mensagemErro}"></div>
+
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h1>Arquivo Compartilhado do Plenário — Simulação Presencial da ONU</h1>
+                    <p><strong>Uso Complementar ao Debate Presencial:</strong> Consulte argumentos, justificativas, fontes e registre contrapontos às posições apresentadas pelas delegações.</p>
+                </div>
+                <span th:if="${momentoAtual != null}" class="badge badge-yellow" th:text="${momentoAtual.descricao}">Fase</span>
+            </div>
+        </div>
+
+        <!-- Lista de Argumentos Compartilhados no Plenário -->
+        <div class="chat-area">
+            <div class="message" th:each="arg : ${argumentosPlenario}">
+                <div class="user-name">
+                    <span>
+                        <span class="badge badge-yellow" th:text="${arg.delegacao}">Delegação</span>
+                        <strong style="margin-left: 6px;" th:text="${arg.autor != null ? arg.autor.nome : 'Delegado(a)'}">Autor</strong>
+                    </span>
+                    <span style="font-size: 11px; color: #71717a;"
+                          th:text="'v' + ${arg.numeroVersao} + ' • ' + (${arg.dataAtualizacao != null ? #temporals.format(arg.dataAtualizacao, 'dd/MM HH:mm') : ''})">Horário</span>
+                </div>
+
+                <div class="message-text">
+                    <strong>Argumento:</strong> <span th:text="${arg.argumento}"></span>
+                </div>
+
+                <div th:if="${arg.justificativa != null and !arg.justificativa.isEmpty()}" style="font-size: 13.5px; color: #3f3f46; margin-bottom: 10px;">
+                    <strong>Justificativa:</strong> <span th:text="${arg.justificativa}"></span>
+                </div>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <div class="source-link" th:if="${arg.fonte != null and !arg.fonte.isEmpty()}">
+                        📚 <strong>Fonte:</strong> <span th:text="${arg.fonte}"></span>
+                    </div>
+                    <a th:if="${arg.linkFonte != null and !arg.linkFonte.isEmpty()}"
+                       th:href="${arg.linkFonte}" target="_blank" rel="noopener noreferrer"
+                       class="source-link" style="color: #1d4ed8; text-decoration: underline;">
+                        🔗 Acessar Link da Referência
+                    </a>
+                </div>
+
+                <div th:if="${arg.contraponto != null and !arg.contraponto.isEmpty()}"
+                     style="margin-top: 12px; padding: 10px 14px; background: #fffbeb; border-left: 3px solid #0A0A0C; border-radius: 4px; font-size: 13.5px;">
+                    <strong>Contraponto Registrado<span th:if="${arg.delegacaoContraponto != null}" th:text="' (' + ${arg.delegacaoContraponto} + ')'"></span>:</strong>
+                    <div style="margin-top: 4px;" th:text="${arg.contraponto}"></div>
+                </div>
+
+                <details style="margin-top: 10px;">
+                    <summary style="font-size: 12px; font-weight: 600; cursor: pointer; color: #0A0A0C;">+ Adicionar ou Atualizar Contraponto a este Argumento</summary>
+                    <form th:action="@{/argumentos/{argId}/contraponto-plenario(argId=${arg.id})}" method="post" style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="text" name="delegacaoContraponto" placeholder="Sua Delegação (ex.: França)" style="padding: 8px; border: 1px solid #d4d4d8; border-radius: 6px; width: 200px;">
+                        <input type="text" name="contraponto" required placeholder="Registre seu contraponto fundamentado..." style="flex: 1; min-width: 240px; padding: 8px; border: 1px solid #d4d4d8; border-radius: 6px;">
+                        <button type="submit" class="btn-secondary">Salvar Contraponto</button>
+                    </form>
+                </details>
+            </div>
+
+            <div th:if="${#lists.isEmpty(argumentosPlenario)}" style="text-align: center; padding: 30px; color: #71717a;">
+                Nenhum argumento compartilhado no plenário ainda. Utilize o formulário abaixo ou o arquivo da sua delegação para registrar a primeira contribuição.
+            </div>
+        </div>
+
+        <!-- Formulário de Registro Direto no Plenário -->
+        <form th:action="@{/argumentos/plenario}" method="post" class="input-area">
+            <h3 style="font-size: 15px; color: #0A0A0C;">Registrar Novo Argumento e Fonte no Plenário</h3>
+            <div class="input-row">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <select name="grupoId">
+                        <option th:each="g : ${meusGrupos}" th:value="${g.id}" th:text="${g.nome}"></option>
+                    </select>
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <input type="text" name="delegacao" placeholder="Delegação / País representado"
+                           th:value="${meusGrupos != null and !#lists.isEmpty(meusGrupos) ? meusGrupos[0].paisDelegacao : ''}">
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <input type="text" name="fonte" placeholder="Fonte / Referência bibliográfica *" required>
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <input type="text" name="linkFonte" placeholder="Link da fonte (https://...)">
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <textarea name="argumento" required placeholder="Argumento (Posição ou afirmação defendida)..."></textarea>
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <textarea name="justificativa" placeholder="Justificativa (Explicação que fundamenta o argumento)..."></textarea>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn-action" style="width: auto; padding: 10px 28px;">Publicar Argumento e Fonte</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

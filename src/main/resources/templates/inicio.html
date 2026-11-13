@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Guia da Plataforma e Regras da Simulação ONU</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/inicio}" class="nav-link active">Início / Como Funciona</a>
+        <a th:href="@{/dashboard}" class="nav-link">Minhas Delegações &amp; Debates</a>
+        <a th:href="@{/estudos}" class="nav-link">Documentos e Acervo</a>
+        <a th:href="@{/simulacao}" class="nav-link">Plenário de Argumentos</a>
+        <a th:href="@{/consenso}" class="nav-link">Mesa de Consenso</a>
+        <a th:href="@{/perfil}" class="nav-link">Meu Perfil &amp; Senha</a>
+        <a th:if="${isOrganizacao}" th:href="@{/admin/piloto}" class="nav-link" style="background-color: #fef9c3; font-weight: 700; border-left-color: #FFC100;">
+            ⚙ Painel Organização / Relatórios
+        </a>
+        <form th:if="${usuario != null}" th:action="@{/logout}" method="post" style="margin-top: auto; padding-top: 20px;">
+            <button type="submit" class="btn-outline" style="width: 100%;">Sair da Conta</button>
+        </form>
+    </nav>
+
+    <main class="main-content">
+
+        <!-- Cabeçalho Principal -->
+        <div class="header-title">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                <span class="badge badge-yellow">Simulação Presencial da ONU • Projeto-Piloto Senac SP</span>
+                <span class="badge badge-dark">Sua voz. Seu argumento. Seu impacto.</span>
+                <span th:if="${momentoAtual != null}" class="badge badge-blue" th:text="'Momento Atual: ' + ${momentoAtual.descricao}">Fase</span>
+            </div>
+            <h1>Bem-vindo ao M.O.V. — Movimento de Opinião e Voz</h1>
+            <p style="max-width: 950px; line-height: 1.6;">
+                O <strong>M.O.V.</strong> é o seu ambiente digital complementar durante a <strong>Simulação Presencial das Nações Unidas</strong>.
+                Ele não substitui a condução presencial da Mesa Diretora, a imprensa ou a equipe de checagem: seu objetivo é oferecer a cada delegação um espaço seguro e estruturado para <strong>organizar seu grupo, armazenar documentos e desenvolver argumentos, fontes e contrapontos</strong> antes, durante e depois do debate.
+            </p>
+        </div>
+
+        <!-- BLOCO 1: Pilares e Os 3 Momentos da Simulação -->
+        <div class="info-grid">
+
+            <div class="info-card">
+                <h2>🎯 O Papel do M.O.V. na Simulação</h2>
+                <p>Durante a simulação da ONU, todas as delegações utilizam a plataforma seguindo quatro diretrizes fundamentais:</p>
+                <ul class="step-list">
+                    <li class="step-item">
+                        <div class="step-number">✓</div>
+                        <div class="step-text">
+                            <h4>Organização por Delegação (Grupos Isolados)</h4>
+                            <p>Cada país possui seu próprio grupo digital. Apenas os integrantes da sua delegação têm acesso aos rascunhos e documentos internos do seu país.</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">✓</div>
+                        <div class="step-text">
+                            <h4>Letramento Informacional (Argumento + Fonte)</h4>
+                            <p>Toda posição defendida deve ser acompanhada de uma justificativa clara e de referências/links verificáveis que sustentem a afirmação.</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">✓</div>
+                        <div class="step-text">
+                            <h4>Colaboração com Autoria e Histórico</h4>
+                            <p>Vários estudantes da mesma delegação podem contribuir juntos no mesmo arquivo compartilhado, com salvamento seguro e histórico de versões.</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">✓</div>
+                        <div class="step-text">
+                            <h4>Apoio ao Debate Presencial</h4>
+                            <p>Funciona em computadores e celulares para consulta rápida nas sessões presenciais, sem interferir na condução da Mesa Diretora.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h2>⏱ Como Funciona nas 3 Etapas do Evento?</h2>
+                <p>A utilização da plataforma acompanha os três momentos da Simulação das Nações Unidas:</p>
+                <ul class="step-list">
+                    <li class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-text">
+                            <h4>Antes do Evento (Preparação da Delegação)</h4>
+                            <p>Acesse o grupo do seu país, consulte os documentos oficiais da simulação, envie materiais de pesquisa da sua delegação e registre seus <strong>argumentos e fontes iniciais</strong>.</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-text">
+                            <h4>Durante o Evento (Sessões Presenciais de Debate)</h4>
+                            <p>Consulte seus materiais rapidamente, registre novos argumentos desenvolvidos nas sessões, acrescente referências e organize <strong>contrapontos</strong> às posições de outras delegações.</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-text">
+                            <h4>Depois do Evento (Preservação e Consulta)</h4>
+                            <p>Todos os documentos, argumentos, fontes e versões produzidos permanecem salvos na plataforma para consulta posterior e avaliação dos resultados do piloto.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- BLOCO 2: Explicação Detalhada das Novas Funcionalidades -->
+        <h2 class="section-title">Guia das Funcionalidades Disponíveis na Plataforma</h2>
+        <div class="feature-grid">
+
+            <div class="feature-card">
+                <span class="badge badge-yellow" style="align-self: flex-start;">Funcionalidade 1</span>
+                <h3>🏳 Grupos de Delegações</h3>
+                <p>Espaço exclusivo para reunir os estudantes que representam o mesmo país na simulação (ex.: <em>Delegação do Brasil, EUA, China, França</em>).</p>
+                <ul class="feature-list">
+                    <li>Identificação clara de todos os integrantes do grupo.</li>
+                    <li>Acesso restrito e protegido contra leitura ou edição indevida por outros grupos.</li>
+                    <li>Editor colaborativo para redigir o <strong>Documento de Posição</strong> e propostas de resolução do país.</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="badge badge-yellow" style="align-self: flex-start;">Funcionalidade 2</span>
+                <h3>📁 Gestão de Documentos</h3>
+                <p>Armazenamento e consulta de materiais de preparação e documentos oficiais da simulação.</p>
+                <ul class="feature-list">
+                    <li><strong>Documentos Gerais:</strong> Guias e textos oficiais disponibilizados pela organização para todos.</li>
+                    <li><strong>Documentos do Grupo:</strong> Materiais de pesquisa, dossiês e documentos de posição exclusivos da sua delegação.</li>
+                    <li><strong>Visualização e Download:</strong> Suporte a arquivos PDF, Word (DOCX), Excel (XLSX), CSV, TXT e imagens (PNG/JPG) até 20 MB.</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="badge badge-yellow" style="align-self: flex-start;">Funcionalidade 3</span>
+                <h3>📝 Arquivo Compartilhado de Argumentos e Fontes</h3>
+                <p>Ambiente central onde os participantes registram e organizam suas contribuições argumentativas.</p>
+                <ul class="feature-list">
+                    <li>Registro estruturado de <strong>Argumento, Justificativa, Fonte, Link e Contraponto</strong>.</li>
+                    <li><strong>Identificação de Autoria:</strong> Mostra quem criou e quem editou cada contribuição.</li>
+                    <li><strong>Histórico de Versões:</strong> Permite consultar alterações e <strong>restaurar versões anteriores</strong> com 1 clique.</li>
+                    <li><strong>Rascunho Automático:</strong> Protege o texto digitado caso a conexão Wi-Fi oscile.</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="badge badge-yellow" style="align-self: flex-start;">Funcionalidade 4</span>
+                <h3>🌐 Plenário, Perfis e Suporte</h3>
+                <p>Integração entre as delegações, Mesa Diretora e equipe organizadora do M.O.V.</p>
+                <ul class="feature-list">
+                    <li><strong>Plenário de Argumentos:</strong> Opção de compartilhar teses e contrapontos com o comitê e a Mesa Diretora.</li>
+                    <li><strong>Perfis Dedicados:</strong> Delegados, Equipe M.O.V. (Admin/Professor), Mesa Diretora, Imprensa e Checagem.</li>
+                    <li><strong>Canal de Suporte Técnico:</strong> Botão integrado no painel para reportar qualquer dificuldade técnica em tempo real.</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- BLOCO 3: Estrutura Recomendada do Arquivo Compartilhado (Seção 3.3) -->
+        <section class="panel-card" style="margin-bottom: 30px;">
+            <div class="section-title" style="margin-bottom: 8px;">
+                <h2>Como Preencher o Arquivo Compartilhado de Argumentos e Fontes</h2>
+                <span class="badge badge-dark">Estrutura Recomendada — Seção 3.3</span>
+            </div>
+            <p style="font-size: 13.5px; color: #52525b; margin-bottom: 16px;">
+                Dentro do espaço da sua delegação, utilize a estrutura abaixo para organizar cada argumento, fundamentação, fonte e contraponto para o debate:
+            </p>
+            <div class="table-responsive" style="margin-bottom: 0;">
+                <table class="mov-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">Campo</th>
+                            <th style="width: 37%;">O que deve ser registrado</th>
+                            <th style="width: 45%;">Exemplo Prático na Simulação da ONU</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Delegação</strong></td>
+                            <td>País representado pelo participante ou grupo.</td>
+                            <td><em>Delegação do Brasil</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Argumento</strong></td>
+                            <td>Posição central ou afirmação defendida pela delegação no debate.</td>
+                            <td><em>A governança global de IA deve garantir transferência tecnológica para países em desenvolvimento.</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Justificativa</strong></td>
+                            <td>Explicação lógica, histórica, econômica ou jurídica que fundamenta o argumento.</td>
+                            <td><em>Sem cooperação técnica multilateral, a concentração digital ampliará a desigualdade educacional e científica no Sul Global.</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fonte</strong></td>
+                            <td>Referência oficial, relatório, tratado ou estudo utilizado para sustentar a afirmação.</td>
+                            <td><em>Resolução ONU A/78/L.49 e Relatório UNESCO sobre Governança Digital (2025).</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Link</strong></td>
+                            <td>Endereço web (URL) da fonte consultada, quando disponível.</td>
+                            <td><code>https://www.unesco.org/en/artificial-intelligence</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Contraponto</strong></td>
+                            <td>Argumento contrário apresentado por outra delegação ou resposta preparada pelo seu grupo.</td>
+                            <td><em>Em resposta à preocupação sobre custos de propriedade intelectual, propomos fundos voluntários e parcerias público-privadas.</em></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Call to Action Final -->
+        <div class="cta-section">
+            <h3>Pronto para entrar na sua Delegação?</h3>
+            <p>Acesse o painel principal para abrir o grupo do seu país, consultar os documentos oficiais e registrar seus argumentos e fontes.</p>
+            <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+                <a th:href="@{/dashboard}" class="btn-action" style="width: auto; min-width: 240px; padding: 14px 28px;">
+                    Acessar Minhas Delegações →
+                </a>
+                <a th:href="@{/estudos}" class="btn-outline" style="width: auto; padding: 14px 24px; background: transparent; color: #ffffff; border-color: #52525b;">
+                    Consultar Documentos Oficiais
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

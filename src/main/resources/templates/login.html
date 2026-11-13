@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Login</title>
+    <script th:if="${captchaEnabled}" src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="brand-side">
+            <h1>M.O.V.</h1>
+            <p>Movimento de Opinião e Voz. <br>Ambiente digital de organização de delegações, documentos, argumentos e fontes para a Simulação da ONU.</p>
+
+            <div class="rules-brief">
+                <strong>Fundamentos da Plataforma:</strong>
+                <ul>
+                    <li>• Organização de grupos por delegação.</li>
+                    <li>• Armazenamento e consulta de documentos oficiais.</li>
+                    <li>• Arquivo compartilhado de argumentos, fontes e contrapontos.</li>
+                    <li>• Sua voz. Seu argumento. Seu impacto.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-side">
+            <h2>Bem-vindo(a) ao M.O.V.</h2>
+            <p>Acesse sua conta para entrar na sua delegação ou painel da organização.</p>
+
+            <form th:action="@{/login-process}" method="post">
+                <div th:if="${param.error}" class="alert-box alert-error">
+                    E-mail ou senha incorretos, ou conta temporariamente bloqueada.
+                </div>
+                <div th:if="${param.logout}" class="alert-box alert-success">
+                    Você saiu com sucesso.
+                </div>
+                <div th:if="${mensagemSucesso}" class="alert-box alert-success" th:text="${mensagemSucesso}"></div>
+                <div th:if="${mensagemErro}" class="alert-box alert-error" th:text="${mensagemErro}"></div>
+
+                <div class="input-group">
+                    <label for="username">Nome Completo (ou E-mail)</label>
+                    <input type="text" id="username" name="username" placeholder="Digite seu Nome Completo ou e-mail" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div th:if="${captchaEnabled}" class="cf-turnstile" th:attr="data-sitekey=${siteKey}" style="margin-bottom: 15px;"></div>
+
+                <button type="submit" class="btn-login">Entrar na Plataforma</button>
+            </form>
+
+            <div class="footer-link">
+                Não tem uma conta? <a th:href="@{/cadastro}">Solicitar acesso / Cadastrar</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

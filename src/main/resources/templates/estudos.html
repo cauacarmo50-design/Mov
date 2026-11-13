@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Documentos e Materiais da Simulação</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/inicio}" class="nav-link">Início / Regras</a>
+        <a th:href="@{/dashboard}" class="nav-link">Minhas Delegações &amp; Debates</a>
+        <a th:href="@{/estudos}" class="nav-link active">Documentos e Acervo</a>
+        <a th:href="@{/simulacao}" class="nav-link">Plenário de Argumentos</a>
+        <a th:href="@{/consenso}" class="nav-link">Mesa de Consenso</a>
+        <a th:href="@{/perfil}" class="nav-link">Meu Perfil &amp; Senha</a>
+        <a th:if="${isOrganizacao}" th:href="@{/admin/piloto}" class="nav-link" style="background-color: #fef9c3; font-weight: 700;">⚙ Painel Organização</a>
+    </nav>
+
+    <main class="main-content">
+        <div th:if="${mensagemSucesso}" class="alert-box alert-success" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro}" class="alert-box alert-error" th:text="${mensagemErro}"></div>
+
+        <div class="header-title">
+            <div>
+                <h1>Acervo de Documentos da Simulação (Seção 3.2)</h1>
+                <p>Consulte documentos oficiais da simulação, dossiês de pesquisa, documentos de posição e projetos de resolução.</p>
+            </div>
+        </div>
+
+        <!-- Formulário de Inserção de Documentos (Seção 3.2) -->
+        <section class="panel-card" style="margin-bottom: 30px;">
+            <h3 style="font-size: 16px; margin-bottom: 12px;">+ Inserir Novo Documento na Plataforma</h3>
+            <form th:action="@{/documentos/upload}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="origem" value="/estudos">
+                <div class="input-row">
+                    <div class="input-group" style="flex: 2;">
+                        <label>Título do Documento *</label>
+                        <input type="text" name="titulo" required placeholder="Ex.: Documento de Posição — Delegação / Artigo de Pesquisa">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Tipo de Material</label>
+                        <select name="tipoDocumento">
+                            <option th:each="t : ${tiposDocumento}" th:value="${t}" th:text="${t.rotulo}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1.5;">
+                        <label>Grupo / Espaço de Destino</label>
+                        <select name="grupoId">
+                            <option th:if="${isOrganizacao}" value="">🌐 Geral (Toda a Simulação)</option>
+                            <option th:each="g : ${meusGrupos}" th:value="${g.id}" th:text="${g.nome}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1.5;">
+                        <label>Arquivo (PDF, DOCX, XLSX, TXT, PNG, JPG — máx 20MB) *</label>
+                        <input type="file" name="arquivo" required accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.md,.png,.jpg,.jpeg">
+                    </div>
+                </div>
+                <div class="input-row" style="align-items: center;">
+                    <div class="input-group" style="flex: 3; margin-bottom: 0;">
+                        <input type="text" name="descricao" placeholder="Resumo ou referência do documento...">
+                    </div>
+                    <div th:if="${isOrganizacao}">
+                        <label style="font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <input type="checkbox" name="publicoGeral" value="true"> Disponível para todos os grupos
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-action" style="width: auto; padding: 10px 24px;">Enviar Documento</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Barra de Pesquisa e Filtro Rápido -->
+        <div class="search-bar">
+            <input type="text" id="busca-doc" placeholder="Pesquisar por título, delegação, categoria ou arquivo..." oninput="filtrarDocumentos()">
+        </div>
+
+        <div class="articles-grid" id="grid-documentos">
+            <div class="article-card doc-item" th:each="doc : ${documentos}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
+                    <span class="article-tag" th:text="${doc.tipoDocumento.rotulo}">Categoria</span>
+                    <span th:if="${doc.publicoGeral}" class="badge badge-blue">🌐 Geral da Simulação</span>
+                    <span th:if="${!doc.publicoGeral and doc.grupo != null}" class="badge badge-dark" th:text="'🔒 ' + ${doc.grupo.nome}">Grupo</span>
+                </div>
+                <h3 class="article-title" th:text="${doc.titulo}">Título do Documento</h3>
+                <p class="article-desc" th:text="${doc.descricao != null and !doc.descricao.isEmpty() ? doc.descricao : doc.nomeOriginal}">Descrição</p>
+
+                <div style="font-size: 12px; color: #71717a; margin-bottom: 15px; border-top: 1px solid #f4f4f5; padding-top: 10px;">
+                    <div><strong>Arquivo:</strong> <span th:text="${doc.nomeOriginal}">arquivo.pdf</span> (<span th:text="${doc.tamanhoFormatado}">10 KB</span>)</div>
+                    <div><strong>Enviado por:</strong> <span th:text="${doc.enviadoPor != null ? doc.enviadoPor.nome : 'Organização'}">Autor</span></div>
+                    <div><strong>Consultas registradas:</strong> <span th:text="${doc.totalConsultas}">0</span></div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: auto;">
+                    <a th:href="@{/documentos/{id}/visualizar(id=${doc.id})}" target="_blank" class="btn-outline" style="flex: 1; text-align: center;">👁 Visualizar</a>
+                    <a th:href="@{/documentos/{id}/download(id=${doc.id})}" class="btn-secondary" style="flex: 1; text-align: center;">⬇ Baixar</a>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(documentos)}" style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #ffffff; border-radius: 10px;">
+                <h3>Nenhum documento disponível no momento.</h3>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function filtrarDocumentos() {
+            const termo = (document.getElementById('busca-doc').value || '').toLowerCase();
+            document.querySelectorAll('.doc-item').forEach(function(card) {
+                const texto = card.textContent.toLowerCase();
+                card.style.display = texto.indexOf(termo) !== -1 ? 'flex' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

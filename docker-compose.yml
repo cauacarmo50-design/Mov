@@ -1,0 +1,63 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mov-mysql
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: mov_db
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-MovSenac@2026Strong!}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: mov-plataforma
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      DB_URL: jdbc:mysql://db:3306/mov_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-MovSenac@2026Strong!}
+      APP_UPLOAD_DIR: /app/uploads
+      APP_SECURE_COOKIE: ${APP_SECURE_COOKIE:-false}
+      APP_USE_REVERSE_PROXY: "true"
+      APP_CAPTCHA_ENABLED: ${APP_CAPTCHA_ENABLED:-false}
+      CAPTCHA_SITE_KEY: ${CAPTCHA_SITE_KEY:-}
+      CAPTCHA_SECRET_KEY: ${CAPTCHA_SECRET_KEY:-}
+    volumes:
+      - uploads_data:/app/uploads
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: mov-https-proxy
+    restart: always
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-:80}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  mysql_data:
+  uploads_data:
+  caddy_data:
+  caddy_config:

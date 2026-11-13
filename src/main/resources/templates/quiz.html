@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Verificação de Leitura</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/inicio}" class="nav-link">Início / Regras</a>
+        <a th:href="@{/dashboard}" class="nav-link active">Minhas Delegações &amp; Debates</a>
+        <a th:href="@{/estudos}" class="nav-link">Documentos e Acervo</a>
+    </nav>
+
+    <main class="main-content">
+        <div class="quiz-wrapper">
+            <div class="progress-indicator">Verificação de Letramento: Questão 1 de 1</div>
+            
+            <div class="quiz-header">
+                <h1>Teste de Retenção</h1>
+                <p>Confirme seu entendimento sobre os materiais lidos para acessar a sala de simulação.</p>
+            </div>
+
+            <div class="question-box">
+                <p class="question-text">Segundo o artigo da UFSC lido na etapa anterior, qual é o principal risco apontado sobre o uso não orientado da Inteligência Artificial por estudantes?</p>
+                
+                <label class="option-label">
+                    <input type="radio" name="quiz1" value="A">
+                    <span class="option-text">A substituição completa dos professores em sala de aula nos próximos 5 anos.</span>
+                </label>
+
+                <label class="option-label">
+                    <input type="radio" name="quiz1" value="B">
+                    <span class="option-text">A passividade cognitiva, reduzindo o desenvolvimento do pensamento crítico e comprometendo a autonomia intelectual.</span>
+                </label>
+
+                <label class="option-label">
+                    <input type="radio" name="quiz1" value="C">
+                    <span class="option-text">O aumento dos custos de infraestrutura de TI para as escolas públicas.</span>
+                </label>
+
+                <label class="option-label">
+                    <input type="radio" name="quiz1" value="D">
+                    <span class="option-text">A dependência exclusiva de bancos de dados locais para formulação de respostas.</span>
+                </label>
+            </div>
+
+            <a th:href="@{/simulacao}" class="btn-submit">Validar Resposta e Entrar na Sala</a>
+        </div>
+    </main>
+
+</body>
+</html>

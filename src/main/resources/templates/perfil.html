@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Meu Perfil e Conta</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/inicio}" class="nav-link">Início / Regras</a>
+        <a th:href="@{/dashboard}" class="nav-link">Minhas Delegações &amp; Debates</a>
+        <a th:href="@{/estudos}" class="nav-link">Documentos e Acervo</a>
+        <a th:href="@{/simulacao}" class="nav-link">Plenário de Argumentos</a>
+        <a th:href="@{/consenso}" class="nav-link">Mesa de Consenso</a>
+        <a th:href="@{/perfil}" class="nav-link active">Meu Perfil &amp; Senha</a>
+        <a th:if="${isOrganizacao}" th:href="@{/admin/piloto}" class="nav-link" style="background-color: #fef9c3; font-weight: 700; border-left-color: #FFC100;">
+            ⚙ Painel Organização / Relatórios
+        </a>
+        <form th:action="@{/logout}" method="post" style="margin-top: auto; padding-top: 20px;">
+            <button type="submit" class="btn-outline" style="width: 100%;">Sair da Conta</button>
+        </form>
+    </nav>
+
+    <main class="main-content">
+        <div th:if="${sucesso}" class="alert-box alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}" class="alert-box alert-error" th:text="${erro}"></div>
+
+        <header class="profile-header">
+            <div class="user-info">
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap;">
+                    <span class="badge badge-yellow" th:text="'PERFIL: ' + ${usuario.tipo}">PERFIL: DELEGADO</span>
+                    <span class="badge badge-dark" th:text="${usuario.email}">email@senac.br</span>
+                </div>
+                <h2 th:text="${usuario.nome}">Nome do Participante</h2>
+                <p th:text="(${usuario.instituicao != null ? usuario.instituicao : 'Senac SP'}) + ' • Gerencie seus dados pessoais e sua senha de acesso'">Senac SP</p>
+            </div>
+            <div>
+                <a th:href="@{/dashboard}" class="btn-outline">← Voltar ao Painel da Simulação</a>
+            </div>
+        </header>
+
+        <div class="info-grid">
+            <!-- CARD 1: EDITAR DADOS PESSOAIS -->
+            <section class="panel-card" style="border-top: 4px solid #FFC100;">
+                <h3 style="font-size: 18px; margin-bottom: 6px;">📝 Editar Dados do Perfil</h3>
+                <p style="font-size: 13px; color: #71717a; margin-bottom: 18px;">
+                    Atualize seu nome de exibição (como aparecerá nos argumentos e documentos) e sua unidade/curso.
+                </p>
+
+                <form th:action="@{/perfil/dados}" method="post">
+                    <div class="input-group">
+                        <label>Nome Completo (Exibido nos Argumentos e Debates) *</label>
+                        <input type="text" name="nome" th:value="${usuario.nome}" required minlength="2" maxlength="100">
+                    </div>
+
+                    <div class="input-group">
+                        <label>E-mail de Acesso (Login)</label>
+                        <input type="email" th:value="${usuario.email}" disabled style="background-color: #f4f4f5; color: #71717a; cursor: not-allowed;">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Instituição / Unidade / Turma</label>
+                        <input type="text" name="instituicao" th:value="${usuario.instituicao}" placeholder="Ex.: Senac SP - Ensino Médio Técnico">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Papel na Simulação</label>
+                        <input type="text" th:value="${usuario.tipo}" disabled style="background-color: #f4f4f5; color: #71717a; cursor: not-allowed;">
+                    </div>
+
+                    <button type="submit" class="btn-action" style="margin-top: 8px;">Salvar Dados do Perfil</button>
+                </form>
+            </section>
+
+            <!-- CARD 2: ALTERAR SENHA DA CONTA -->
+            <section class="panel-card" style="border-top: 4px solid #0A0A0C;">
+                <h3 style="font-size: 18px; margin-bottom: 6px;">🔒 Alterar Senha da Conta</h3>
+                <p style="font-size: 13px; color: #71717a; margin-bottom: 18px;">
+                    Informe sua senha atual e escolha uma nova senha de pelo menos 4 caracteres.
+                </p>
+
+                <form th:action="@{/perfil/senha}" method="post">
+                    <div class="input-group">
+                        <label>Senha Atual *</label>
+                        <input type="password" name="senhaAtual" required placeholder="Digite sua senha atual">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Nova Senha (mínimo 4 caracteres) *</label>
+                        <input type="password" name="novaSenha" required minlength="4" placeholder="Digite a nova senha">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Confirmar Nova Senha *</label>
+                        <input type="password" name="confirmarSenha" required minlength="4" placeholder="Repita a nova senha">
+                    </div>
+
+                    <button type="submit" class="btn-secondary" style="width: 100%; padding: 12px 18px; margin-top: 8px;">Atualizar Minha Senha</button>
+                </form>
+
+                <!-- RESUMO DA DELEGAÇÃO VINCULADA -->
+                <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #e4e4e7;">
+                    <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">🏳 Minha Delegação na Simulação</h4>
+
+                    <div th:if="${meusGrupos != null and !#lists.isEmpty(meusGrupos)}">
+                        <div th:each="g : ${meusGrupos}" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #fafafa; border: 1px solid #e4e4e7; border-radius: 6px; margin-bottom: 8px; gap: 10px; flex-wrap: wrap;">
+                            <div>
+                                <strong style="font-size: 13.5px;" th:text="${g.nome}">Grupo — Delegação</strong>
+                                <span class="badge badge-yellow" style="margin-left: 6px;" th:text="${g.paisDelegacao}">PAÍS</span>
+                            </div>
+                            <a th:href="@{/grupos/{id}(id=${g.id})}" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Abrir Delegação →</a>
+                        </div>
+                    </div>
+
+                    <div th:if="${meusGrupos == null or #lists.isEmpty(meusGrupos)}">
+                        <p style="font-size: 13px; color: #71717a; margin-bottom: 10px;">Você ainda não selecionou sua delegação:</p>
+                        <form th:action="@{/grupos/entrar}" method="post" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <select name="grupoId" required style="flex: 1; padding: 8px 10px; border-radius: 6px; border: 1px solid #d4d4d8;">
+                                <option value="">— Escolha sua Delegação —</option>
+                                <option th:each="g : ${todosGruposDisponiveis}" th:value="${g.id}" th:text="${g.paisDelegacao + ' (' + g.nome + ')'}">País</option>
+                            </select>
+                            <button type="submit" class="btn-action" style="width: auto; padding: 8px 14px;">Vincular</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

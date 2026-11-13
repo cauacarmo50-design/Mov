@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.O.V. - Regras da Sala</title>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">M.O.V.</div>
+        <a th:href="@{/simulacao}" class="sidebar-item">← Voltar ao Debate</a>
+        <a th:href="@{/consenso}" class="sidebar-item">Mesa de Consenso</a>
+        <a th:href="@{/regrasdasala}" class="sidebar-item active">Regras da Sala</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Código de Conduta e Regras</h1>
+            <p>O M.O.V. é um espaço para o desenvolvimento do pensamento crítico e autonomia intelectual[cite: 65, 69]. O descumprimento destas diretrizes pode resultar em suspensão da simulação.</p>
+        </div>
+
+        <div class="rules-container">
+            
+            <div class="rule-card">
+                <div class="rule-header">
+                    <div class="rule-number">1</div>
+                    <h3 class="rule-title">Letramento Informacional Obrigatório</h3>
+                </div>
+                <p class="rule-desc">Todo argumento factual deve ser obrigatoriamente acompanhado de uma fonte confiável (link). O combate à desinformação começa com a validação rigorosa dos dados antes da postagem[cite: 65, 67].</p>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <div class="rule-number">2</div>
+                    <h3 class="rule-title">Objetividade e Respeito Mútuo</h3>
+                </div>
+                <p class="rule-desc">Ataques pessoais (ad hominem), ironias ou tom agressivo são estritamente proibidos. O foco deve ser sempre a desconstrução da ideia, nunca o ataque ao delegado oponente[cite: 65].</p>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <div class="rule-number">3</div>
+                    <h3 class="rule-title">Autonomia e Uso Consciente de IA</h3>
+                </div>
+                <p class="rule-desc">É encorajado o uso da "Resposta Consciente" (IA) para estruturar hipóteses, mas é proibido o uso de respostas geradas 100% por inteligência artificial sem reflexão ou adição do próprio raciocínio[cite: 60, 67].</p>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <div class="rule-number">4</div>
+                    <h3 class="rule-title">Foco na Resolução Conjunta</h3>
+                </div>
+                <p class="rule-desc">O objetivo final de todo comitê não é "vencer" o debate, mas sim chegar a um acordo. Todos os delegados devem se encaminhar para a Mesa de Consenso ao final da rodada para redigir o termo de resolução.</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
+
+
